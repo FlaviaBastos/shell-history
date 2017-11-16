@@ -2,7 +2,6 @@
 
 Shell History
 
-[[TOC]]
 
 # [OVERVIEW](#heading=h.14mpx6a8znb7)
 
