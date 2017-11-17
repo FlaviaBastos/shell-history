@@ -1,0 +1,15 @@
+syntax = "proto3";
+package history;
+
+
+message Command {
+  string hostname = 1;
+  int64 timestamp = 2;
+  string username = 3;
+  string altusername = 4;
+  string cwd = 5;
+  string oldpwd = 6;
+  repeated string command = 7;
+  int64 exitcode = 8;
+};
+
