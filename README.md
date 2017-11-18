@@ -3,21 +3,21 @@
 Shell History
 
 
-# [OVERVIEW](#heading=h.14mpx6a8znb7)
+# OVERVIEW
 
 The shell history is an essential resource for a system administrator as it not only provides a view of past activities, but can also be used as a cookbook, providing insights for future activities and be used for postmortem analysis.
 
 Unfortunately the standard way the shell history works attaches the commands list to a terminal, session and/or individual host. It would be much more valuable to have access to one’s shell history from any terminal you are currently working from.
 
-# [GOALS](#heading=h.oymnw3nlvwib)
+# GOALS
 
 1. Implement a shell history which is accessible from any host within a given set of restrictions
 
 2. Make the history easily searchable from the terminal or via a web interface
 
-# [SPECIFICATIONS](#heading=h.c5rpsdy8g2ak)
+# SPECIFICATIONS
 
-The system should be implemented in four main features: 
+The system should implement four main features: 
 
 1. The local redirector, which will capture the shell command, parse it and upload to a remote server
 
@@ -37,7 +37,18 @@ The system should be implemented in four main features:
 
     5. Delete / Purge history
 
-## [Design / Technology choices](#heading=h.fr4dxinclno1)
+## Local redirector
+
+The most transparent way to use the local redirector seems to be via [bash-preexec](https://github.com/rcaloras/bash-preexec).
+
+A simple example of .bashrc using it:
+
+```
+source ~/.bash-preexec.sh
+source ~/go/src/github.com/ebastos/shell-history/precmd.sh
+```
+
+## Design / Technology choices
 
 The main four pieces will be implemented in two different languages:
 
@@ -45,7 +56,7 @@ Go (golang) for the command line redirector and Python + Django for the remote d
 
 Communication between the redirector and the remote daemon shall be implemented via gRPC using protobufs.
 
-### [Rationale](#heading=h.dfk45ayqk3e2)
+### Rationale
 
 * Go (golang) is a compiled, multi-platform language with an outstanding standard library, which will produce self-contained binaries for easy deployment and no dependency hell.
 
@@ -57,15 +68,15 @@ Communication between the redirector and the remote daemon shall be implemented 
 
 * Protocol Buffers (protobufs) are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Based on a model it’s possible to generate APIs for multiple languages so there is an easy and efficient way to exchange data
 
-### [Technology Choices out of scope](#heading=h.qzix69ba6nfg)
+### Technology Choices out of scope
 
 Due to Python and Django’s multi-platform and multi-database support both the operating system on the server and the backend database chosen are irrelevant and should be subject to the choice of each deployment leader.
 
-### [Open for investigation](#heading=h.u3c3ky23q74)
+### Open for investigation
 
-Material Design?
+Web Interface: Material Design?
 
-## [Django Backend](#heading=h.bvqr6g3449gj)
+## Django Backend
 
 The following models will be necessary:
 
@@ -105,7 +116,7 @@ The following models will be necessary:
 
     15. SourceAddress (str)
 
-# [SECURITY AND PRIVACY](#heading=h.ptid34x9au08)
+# SECURITY AND PRIVACY
 
 Shell history can be considered sensitive data as it’s common for commands to include IP addresses, hostnames, usernames and even passwords. Transferring the commands between the local host and the remote server must happen in an encrypted and authenticated way.
 
@@ -117,21 +128,24 @@ Encryption of data on rest with GPG was also considered, but dismissed for this 
 
 Some challenges still stand, like the authentication of the remote user when query data via command line. Solutions still pending investigation.
 
-# [ALTERNATIVE APPROACHES](#heading=h.4d1pwxczqj2p)
+# ALTERNATIVE APPROACHES
 
 Regardless of this particular project approach, some options to make the shell history more flexible or accessible already exist:
+
+* [Bashhub](https://www.bashhub.com/)
 
 * [Saving bash history in syslog](https://coderwall.com/p/anphha/save-bash-history-in-syslog-on-centos)
 
 * Local function (see references section)
 
-# [MILESTONES (Phase 1)](#heading=h.x5u0l8hx0kbh)
+
+# MILESTONES (Phase 1)
 
 ## Local redirector
 
-* Find the best way to capture the last command line
+* ~~Find the best way to capture the last command line~~
 
-* Find how to parse it and store inside a protobuf
+* ~~Find how to parse it and store inside a protobuf~~
 
 * Find how to securely connect to gRPC and transmit data
 
@@ -139,7 +153,7 @@ Regardless of this particular project approach, some options to make the shell h
 
 * Find how to to listen and receive gRPC connection securely
 
-* Find how to receive and parse protobuf
+* ~~Find how to receive and parse protobuf~~
 
 ## Django 
 
@@ -147,11 +161,11 @@ Regardless of this particular project approach, some options to make the shell h
 
 **Protobuf**
 
-* Define it’s properties
+* ~~Define it’s properties~~
 
-# [REFERENCES](#heading=h.7paougypbnic)
+# REFERENCES
 
-[You Should Be Logging Shell ](https://www.jefftk.com/p/you-should-be-logging-shell-history)[History](https://www.jefftk.com/p/you-should-be-logging-shell-history)
+[You Should Be Logging Shell History](https://www.jefftk.com/p/you-should-be-logging-shell-history)
 
-[Secure gRPC with TLS/](https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html)[SSL](https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html)
+[Secure gRPC with TLS/SSL](https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html)
 

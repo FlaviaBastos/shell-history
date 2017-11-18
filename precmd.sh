@@ -3,7 +3,7 @@ preexec() {
     }
 
 precmd() { 
-/data/home/main/go/src/github.com/ebastos/shell-history/shell-history -e $? $LASTCMD
+~/go/src/github.com/ebastos/shell-history/shell-history -e $? $LASTCMD
 export LASTCMD=""
 
 }
