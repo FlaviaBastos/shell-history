@@ -1,13 +1,20 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
 	"os/user"
 	"time"
 
+	"google.golang.org/grpc"
+
 	spb "github.com/ebastos/shell-history/history"
+)
+
+const (
+	address = "localhost:50051"
 )
 
 func main() {
@@ -19,6 +26,14 @@ func main() {
 	}
 
 	argsWithoutProg := os.Args[3:]
+
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := spb.NewHistorianClient(conn)
+
 	var h spb.Command
 
 	user, err := user.Current()
@@ -37,5 +52,10 @@ func main() {
 
 		h.Altusername = os.Getenv("SUDO_USER")
 	}
-
+	_, err = c.GetCommand(context.Background(), &h)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	// log.Printf("Greeting: %s", r.Response)
+	return
 }
