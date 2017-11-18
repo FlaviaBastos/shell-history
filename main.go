@@ -15,7 +15,35 @@ import (
 
 const (
 	address = "localhost:50051"
+	timeout = 300 * time.Millisecond
 )
+
+func connect(address string) (*grpc.ClientConn, error) {
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithTimeout(timeout))
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
+
+func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command {
+	var h spb.Command
+	user, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	h.Hostname, _ = os.Hostname()
+	h.Timestamp = time.Now().Unix()
+	h.Username = user.Username
+	h.Cwd, err = os.Getwd()
+	h.Oldpwd = os.Getenv("OLDPWD")
+	h.Command = argsWithoutProg
+	h.Exitcode = commandExitCode
+	if os.Geteuid() == 0 {
+		h.Altusername = os.Getenv("SUDO_USER")
+	}
+	return h
+}
 
 func main() {
 	commandExitCode := flag.Int64("e", 0, "Exit code of last command")
@@ -27,35 +55,25 @@ func main() {
 
 	argsWithoutProg := os.Args[3:]
 
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := connect(address)
+	defer conn.Close()
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	defer conn.Close()
+
 	c := spb.NewHistorianClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 
-	var h spb.Command
+	h := getinformation(argsWithoutProg, *commandExitCode)
 
-	user, err := user.Current()
+	r, err := c.GetCommand(ctx, &h)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not save command: %v", err)
 	}
 
-	h.Hostname, _ = os.Hostname()
-	h.Timestamp = time.Now().Unix()
-	h.Username = user.Username
-	h.Cwd, err = os.Getwd()
-	h.Oldpwd = os.Getenv("OLDPWD")
-	h.Command = argsWithoutProg
-	h.Exitcode = *commandExitCode
-	if os.Geteuid() == 0 {
-
-		h.Altusername = os.Getenv("SUDO_USER")
+	if r.Status == spb.Status_ERR {
+		log.Fatalf("Received error while uploading command")
 	}
-	_, err = c.GetCommand(context.Background(), &h)
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	// log.Printf("Greeting: %s", r.Response)
 	return
 }
