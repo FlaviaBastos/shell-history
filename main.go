@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"log/syslog"
 	"os"
 	"os/user"
 	"time"
@@ -48,6 +49,12 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 func main() {
 	commandExitCode := flag.Int64("e", 0, "Exit code of last command")
 	flag.Parse()
+
+	// logs go to syslog instead of user terminal.
+	logwriter, err := syslog.New(syslog.LOG_NOTICE, "shell-history")
+	if err == nil {
+		log.SetOutput(logwriter)
+	}
 
 	if len(os.Args) < 4 {
 		return
