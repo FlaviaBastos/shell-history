@@ -1,2 +1,12 @@
 *.pyc
 shell-history
+Vagrantfile
+.vagrant
+backend/history_pb2.py
+backend/history_pb2_grpc.py
+backend/ubuntu-xenial-16.04-cloudimg-console.log
+bin/           
+history/history.pb.go                                      
+include/
+lib/
+pip-selfcheck.json
