@@ -10,3 +10,4 @@ history/history.pb.go
 include/
 lib/
 pip-selfcheck.json
+certs/*
