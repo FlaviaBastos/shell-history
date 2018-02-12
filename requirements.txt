@@ -1,0 +1,10 @@
+click==4.0
+grpcio==1.9.1
+grpcio-tools==1.9.1
+marshmallow==2.15.0
+protobuf==3.5.1
+Python-EasyConfig==0.1.6
+Python-RESTArt==0.1.5
+PyYAML==3.12
+six==1.9.0
+Werkzeug==0.14.1
