@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"log/syslog"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	spb "github.com/ebastos/shell-history/history"
 )
@@ -20,7 +22,12 @@ const (
 )
 
 func connect(address string) (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithTimeout(timeout))
+	var cert = "certs/localhost.crt"
+	creds, err := credentials.NewClientTLSFromFile(cert, "")
+	if err != nil {
+		return nil, fmt.Errorf("could not load tls cert: %s", err)
+	}
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithTimeout(timeout))
 	if err != nil {
 		return nil, err
 	}
