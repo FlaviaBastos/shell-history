@@ -16,8 +16,9 @@ SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 all: proto build
 
+# Using packr (https://github.com/gobuffalo/packr) to build
 $(TARGET): $(SRC)
-	@go build $(LDFLAGS) -o $(TARGET)
+	@packr build $(LDFLAGS) -o $(TARGET)
 
 build: $(TARGET)
 	@true

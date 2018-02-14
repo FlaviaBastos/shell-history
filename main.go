@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/x509"
 	"flag"
-	"fmt"
 	"log"
 	"log/syslog"
 	"os"
@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	spb "github.com/ebastos/shell-history/history"
+	"github.com/gobuffalo/packr"
 )
 
 const (
@@ -22,11 +23,15 @@ const (
 )
 
 func connect(address string) (*grpc.ClientConn, error) {
-	var cert = "certs/localhost.crt"
-	creds, err := credentials.NewClientTLSFromFile(cert, "")
-	if err != nil {
-		return nil, fmt.Errorf("could not load tls cert: %s", err)
-	}
+
+	// Let's embed the certificate
+	box := packr.NewBox("./certs")
+	cert := box.Bytes("localhost.crt")
+	roots := x509.NewCertPool()
+	roots.AppendCertsFromPEM(cert)
+
+	creds := credentials.NewClientTLSFromCert(roots, "")
+
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithTimeout(timeout))
 	if err != nil {
 		return nil, err
