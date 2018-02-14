@@ -147,11 +147,11 @@ Regardless of this particular project approach, some options to make the shell h
 
 * ~~Find how to parse it and store inside a protobuf~~
 
-* Find how to securely connect to gRPC and transmit data
+* ~~Find how to securely connect to gRPC and transmit data~~
 
 ## Remote daemon
 
-* Find how to to listen and receive gRPC connection securely
+* ~~Find how to to listen and receive gRPC connection securely~~
 
 * ~~Find how to receive and parse protobuf~~
 
