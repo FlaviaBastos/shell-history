@@ -18,13 +18,13 @@ class Historian(history_pb2_grpc.HistorianServicer):
           status=history_pb2._STATUS.values_by_name['OK'].name)
 
 def serve():
-    with open('../certs/localhost.key') as f:
+    with open('certs/localhost.key') as f:
         private_key = f.read()
-    with open('../certs/localhost.crt') as f:
+    with open('certs/localhost.crt') as f:
         certificate_chain = f.read()
 
     server_credentials = grpc.ssl_server_credentials(
-      ((private_key, certificate_chain,),))
+      ((str.encode(private_key), str.encode(certificate_chain),),))
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     history_pb2_grpc.add_HistorianServicer_to_server(Historian(), server)
     server.add_secure_port('[::]:50051', server_credentials)
