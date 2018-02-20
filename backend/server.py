@@ -1,4 +1,5 @@
 from concurrent import futures
+import os
 import time
 
 import grpc
@@ -17,7 +18,7 @@ class Historian(history_pb2_grpc.HistorianServicer):
         return history_pb2.Response(
           status=history_pb2._STATUS.values_by_name['OK'].name)
 
-def serve():
+def serve(port):
     with open('certs/localhost.key') as f:
         private_key = f.read()
     with open('certs/localhost.crt') as f:
@@ -27,7 +28,7 @@ def serve():
       ((str.encode(private_key), str.encode(certificate_chain),),))
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     history_pb2_grpc.add_HistorianServicer_to_server(Historian(), server)
-    server.add_secure_port('[::]:50051', server_credentials)
+    server.add_secure_port('[::]:{}'.format(port), server_credentials)
     server.start()
     try:
         while True:
@@ -36,4 +37,5 @@ def serve():
         server.stop(0)
 
 if __name__ == '__main__':
-    serve()
+    port = os.environ.get("PORT", 50051)
+    serve(port=port)
