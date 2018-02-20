@@ -13,4 +13,5 @@ RUN pip install -r requirements.txt
 COPY certs/* /app/certs/
 COPY backend/* /app/
 
+ENV PORT 50051
 CMD python server.py
