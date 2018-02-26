@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 # Create your models here.
 
@@ -11,3 +12,9 @@ class Command(models.Model):
     cwd = models.CharField(max_length=255)
     oldpwd = models.CharField(max_length=255)
     command = models.TextField()
+    exitcode = models.IntegerField(default=0)
+    def __str__(self):
+        string = '{user}@{hostname}-{time}'.format(
+            user=self.username, hostname=self.hostname,
+            time=self.timestamp.strftime('%d%m%Y+%H%M%S:%f'))
+        return string

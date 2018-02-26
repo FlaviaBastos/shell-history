@@ -1,0 +1,9 @@
+{% if latest_commands %}
+
+    {% for command in latest_commands %}
+    <pre>{{command.username }}@{{command.hostname}}:{{command.cwd}}# {{command.command}}  [<a href="/history/{{ command.id }}/">details</a>]</pre>
+    {% endfor %}
+
+{% else %}
+    <p>No Commands are available.</p>
+{% endif %}
