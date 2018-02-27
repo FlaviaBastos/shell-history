@@ -28,4 +28,4 @@ clean:
 
 proto:
 	protoc -I=history/ --go_out=plugins=grpc:history/ history/history.proto
-	python -m grpc_tools.protoc -Ihistory/ --python_out=backend/ --grpc_python_out=backend/ history/history.proto 
+	python3 -m grpc_tools.protoc -Ihistory/ --python_out=backend/ --grpc_python_out=backend/ history/history.proto 

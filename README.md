@@ -163,6 +163,9 @@ Regardless of this particular project approach, some options to make the shell h
 
 * ~~Define it’s properties~~
 
+# Developer guide
+[How to setup a EC2 instance for develping shell-history](https://github.com/ebastos/shell-history/blob/master/DEVELOPING.md)
+
 # REFERENCES
 
 [You Should Be Logging Shell History](https://www.jefftk.com/p/you-should-be-logging-shell-history)
