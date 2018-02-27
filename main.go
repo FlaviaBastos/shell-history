@@ -46,7 +46,7 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 		log.Fatal(err)
 	}
 	h.Hostname, _ = os.Hostname()
-	h.Timestamp = time.Now().Unix()
+	h.Timestamp = time.Now().UTC().Unix()
 	h.Username = user.Username
 	h.Cwd, err = os.Getwd()
 	h.Oldpwd = os.Getenv("OLDPWD")
