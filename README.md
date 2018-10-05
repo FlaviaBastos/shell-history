@@ -157,7 +157,7 @@ Regardless of this particular project approach, some options to make the shell h
 
 ## Django 
 
-* Create models
+* ~~Create models~~
 
 **Protobuf**
 
