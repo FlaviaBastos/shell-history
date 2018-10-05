@@ -1,5 +1,5 @@
 attrs==17.4.0
-Django==2.0.2
+Django==2.0.8
 grpcio==1.9.1
 grpcio-tools==1.9.1
 pluggy==0.6.0
