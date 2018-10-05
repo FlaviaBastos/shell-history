@@ -8,7 +8,7 @@
 {% if latest_commands %}
 
     {% for command in latest_commands %}
-    <div class="card-panel">
+    <div class="card-small">
         {% if command.exitcode == 0 %}
         <span class="blue-text text-darken-2">
                 {% else %}

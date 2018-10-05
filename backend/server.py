@@ -44,6 +44,7 @@ def serve(port):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     history_pb2_grpc.add_HistorianServicer_to_server(Historian(), server)
     server.add_secure_port('[::]:{}'.format(port), server_credentials)
+
     server.start()
     try:
         while True:
