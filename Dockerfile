@@ -14,4 +14,8 @@ COPY certs/* /app/certs/
 COPY backend/* /app/
 
 ENV PORT 50051
-CMD python server.py
+
+EXPOSE 80
+EXPOSE 50051
+
+CMD  python server.py & python manage.py runserver 0.0.0.0:80
