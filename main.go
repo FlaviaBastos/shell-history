@@ -46,7 +46,7 @@ func initConfig() Config {
 
                 //Convert json to Config struct.
                 json.Unmarshal(byteValue, &config)
-	}
+        }
         
         jsonFile.Close()
 
@@ -93,7 +93,7 @@ func main() {
 
         if !strconv.ParseBool(config.Enabled) {
                 log.Fatal("shell-history is not enabled.")
-		return
+                return
         }
 	
 	commandExitCode := flag.Int64("e", 0, "Exit code of last command")
