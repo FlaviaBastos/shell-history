@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"flag"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"log/syslog"
 	"os"
 	"os/user"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc"
@@ -22,8 +26,34 @@ const (
 	timeout = 300 * time.Millisecond
 )
 
-func connect(address string) (*grpc.ClientConn, error) {
+// Config
+type Config struct {
+	Enabled   boolean `json:"enabled"`
+}
 
+func initConfig() Config {
+        config := Config{true}
+	
+        // Open shell-history.json
+        jsonFile, err := os.Open("~/.config/shell-history.json")
+
+        // if we os.Open returns an error log it.
+        if err != nil {
+                log.Fatal(err)		
+        } else {
+                //Read file.
+                byteValue, _ := ioutil.ReadAll(jsonFile)
+
+                //Convert json to Config struct.
+                json.Unmarshal(byteValue, &config)
+	}
+        
+        jsonFile.Close()
+
+        return config
+}
+
+func connect(address string) (*grpc.ClientConn, error) {
 	// Let's embed the certificate
 	box := packr.NewBox("./certs")
 	cert := box.Bytes("localhost.crt")
@@ -59,6 +89,13 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 }
 
 func main() {
+        config := config()
+
+        if !strconv.ParseBool(config.Enabled) {
+                log.Fatal("shell-history is not enabled.")
+		return
+        }
+	
 	commandExitCode := flag.Int64("e", 0, "Exit code of last command")
 	flag.Parse()
 
