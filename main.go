@@ -5,13 +5,11 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"log/syslog"
 	"os"
 	"os/user"
-	"strconv"
 	"time"
 
 	"google.golang.org/grpc"
@@ -28,7 +26,7 @@ const (
 
 // Config
 type Config struct {
-	Enabled   boolean `json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 func initConfig() Config {
@@ -39,7 +37,7 @@ func initConfig() Config {
 
         // if we os.Open returns an error log it.
         if err != nil {
-                log.Fatal(err)		
+                log.Fatal(err)
         } else {
                 //Read file.
                 byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -91,8 +89,7 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 func main() {
         config := config()
 
-        if !strconv.ParseBool(config.Enabled) {
-                log.Fatal("shell-history is not enabled.")
+        if !config.Enabled {
                 return
         }
 	
