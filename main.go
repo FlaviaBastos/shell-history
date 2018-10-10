@@ -10,6 +10,7 @@ import (
 	"log/syslog"
 	"os"
 	"os/user"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -30,25 +31,28 @@ type Config struct {
 }
 
 func initConfig() Config {
-        config := Config{true}
-	
-        // Open shell-history.json
-        jsonFile, err := os.Open("~/.config/shell-history.json")
+	config := Config{true}
 
-        // if we os.Open returns an error log it.
-        if err != nil {
-                log.Fatal(err)
-        } else {
-                //Read file.
-                byteValue, _ := ioutil.ReadAll(jsonFile)
+	// Open shell-history.json
+	jsonFile, err := os.Open("~/.config/shell-history.json")
 
-                //Convert json to Config struct.
-                json.Unmarshal(byteValue, &config)
-        }
-        
-        jsonFile.Close()
+	// if we os.Open returns an error log it.
+	if err != nil {
+		if strings.ContainsAny("no such file or directory", err.Error()) {
+			return config
+		}
+		log.Fatal(err)
+	} else {
+		//Read file.
+		byteValue, _ := ioutil.ReadAll(jsonFile)
 
-        return config
+		//Convert json to Config struct.
+		json.Unmarshal(byteValue, &config)
+	}
+
+	jsonFile.Close()
+
+	return config
 }
 
 func connect(address string) (*grpc.ClientConn, error) {
@@ -87,12 +91,12 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 }
 
 func main() {
-        config := config()
+	config := initConfig()
 
-        if !config.Enabled {
-                return
-        }
-	
+	if !config.Enabled {
+		return
+	}
+
 	commandExitCode := flag.Int64("e", 0, "Exit code of last command")
 	flag.Parse()
 
