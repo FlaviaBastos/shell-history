@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"log/syslog"
@@ -27,18 +28,26 @@ const (
 
 // Config
 type Config struct {
-	Enabled bool `json:"enabled"`
+	Disabled bool `json:"disabled"`
+	Secure   bool `json:"secure"`
 }
 
 func initConfig() Config {
-	config := Config{true}
+	config := Config{}
+	config.Disabled = false
+
+	user, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Open shell-history.json
-	jsonFile, err := os.Open("~/.config/shell-history.json")
+	jsonFile, err := os.Open(user.HomeDir + "/.config/shell-history.json")
 
 	// if we os.Open returns an error log it.
 	if err != nil {
 		if strings.ContainsAny("no such file or directory", err.Error()) {
+			fmt.Println(err)
 			return config
 		}
 		log.Fatal(err)
@@ -51,7 +60,6 @@ func initConfig() Config {
 	}
 
 	jsonFile.Close()
-
 	return config
 }
 
@@ -69,6 +77,15 @@ func connect(address string) (*grpc.ClientConn, error) {
 		return nil, err
 	}
 	return conn, nil
+}
+
+func connectInsecure(address string) (*grpc.ClientConn, error) {
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+
 }
 
 func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command {
@@ -93,7 +110,7 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 func main() {
 	config := initConfig()
 
-	if !config.Enabled {
+	if config.Disabled {
 		return
 	}
 
@@ -112,7 +129,7 @@ func main() {
 
 	argsWithoutProg := os.Args[3:]
 
-	conn, err := connect(address)
+	conn, err := connectInsecure(address)
 	defer conn.Close()
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
