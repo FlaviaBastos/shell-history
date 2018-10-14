@@ -7,7 +7,7 @@ Shell History
 
 The shell history is an essential resource for a system administrator as it not only provides a view of past activities, but can also be used as a cookbook, providing insights for future activities and be used for postmortem analysis.
 
-Unfortunately the standard way the shell history works attaches the commands list to a terminal, session and/or individual host. It would be much more valuable to have access to one’s shell history from any terminal you are currently working from.
+Unfortunately the standard way the shell history works is that it attaches the commands list to a terminal, session and/or individual host. It would be much more valuable to have access to one’s shell history from any terminal you are currently working from.
 
 # GOALS
 
@@ -17,7 +17,7 @@ Unfortunately the standard way the shell history works attaches the commands lis
 
 # SPECIFICATIONS
 
-The system should implement four main features: 
+The system should implement four main features:
 
 1. The local redirector, which will capture the shell command, parse it and upload to a remote server
 
@@ -60,9 +60,9 @@ Communication between the redirector and the remote daemon shall be implemented 
 
 * Go (golang) is a compiled, multi-platform language with an outstanding standard library, which will produce self-contained binaries for easy deployment and no dependency hell.
 
-* Python is a popular, decently performing scripting language, also with an outstanding standard library. A huge number of 3rd party libraries is also available to be added if necessary
+* Python is a popular, decently performing scripting language, also with an outstanding standard library. A huge number of 3rd party libraries are also available to be added if necessary.
 
-* Django is a web app framework built on Python, applying the DRY principle and lots of "free" features, like admin interface. Its MVC also makes it easy to interact directly with the models using APIs, which we will do from the remote daemon
+* Django is a web app framework built on Python, applying the DRY principle and lots of "free" features, like admin interface. Its MVC also makes it easy to interact directly with the models using APIs, which we will do from the remote daemon.
 
 * gRPC is a high performance, open-source universal RPC framework backed by Google, which excels in small calls and is highly efficient over the wire.
 
@@ -120,7 +120,7 @@ The following models will be necessary:
 
 Shell history can be considered sensitive data as it’s common for commands to include IP addresses, hostnames, usernames and even passwords. Transferring the commands between the local host and the remote server must happen in an encrypted and authenticated way.
 
-gRPC native support to TLS/SSL should easily address this demand. On the webserver side HTTPS is also a requirement. 
+gRPC native support to TLS/SSL should easily address this demand. On the webserver side HTTPS is also a requirement.
 
 It is suggested that the remote daemon should have access restricted to known and trusted subnets, although having it exposed to the open internet is not a major security risk.
 
@@ -155,7 +155,7 @@ Regardless of this particular project approach, some options to make the shell h
 
 * ~~Find how to receive and parse protobuf~~
 
-## Django 
+## Django
 
 * ~~Create models~~
 
@@ -164,11 +164,10 @@ Regardless of this particular project approach, some options to make the shell h
 * ~~Define it’s properties~~
 
 # Developer guide
-[How to setup a EC2 instance for develping shell-history](https://github.com/ebastos/shell-history/blob/master/DEVELOPING.md)
+[How to setup a EC2 instance for developing shell-history](https://github.com/ebastos/shell-history/blob/master/DEVELOPING.md)
 
 # REFERENCES
 
 [You Should Be Logging Shell History](https://www.jefftk.com/p/you-should-be-logging-shell-history)
 
 [Secure gRPC with TLS/SSL](https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html)
-
