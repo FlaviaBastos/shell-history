@@ -1,12 +1,53 @@
 <html>
+    <head>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    </head>
+
     <body>
-        <!-- Compiled and minified CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
         <!-- Compiled and minified JavaScript -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-        {% if latest_commands %}
 
-            {% for command in latest_commands %}
+        <nav>
+          <div class="nav-wrapper blue darken-2">
+            <a href="#" class="brand-logo">Shell History</a>
+          </div>
+        </nav>
+
+
+        {% if commands_paginated %}
+
+            <ul class="pagination">
+                {% if commands_paginated.has_previous %}
+                    <li class="waves-effect"><a href="?page=1" class="blue-text text-darken-2">first</a></li>
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}" class="blue-text text-darken-2">
+                        <i class="material-icons">chevron_left</i></a>
+                    </li>
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}" class="blue-text text-darken-2">
+                        {{ commands_paginated.previous_page_number }}</a>
+                    </li>
+                {% else %}
+                    <li class="disabled"><a href="#!" class="blue-text text-darken-2">
+                        <i class="material-icons">chevron_left</i></a>
+                    </li>
+                {% endif %}
+                <li class="active red darken-2"><a href="#!" class="white-text">{{ commands_paginated.number }}</a></li>
+                {% if commands_paginated.has_next %}
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}" class="blue-text text-darken-2">
+                        {{ commands_paginated.next_page_number }}</a>
+                    </li>
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}" class="blue-text text-darken-2">
+                        <i class="material-icons">chevron_right</i></a>
+                    </li>
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.paginator.num_pages }}" class="blue-text text-darken-2">
+                        last ({{ commands_paginated.paginator.num_pages }})</a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            {% for command in commands_paginated %}
             <div class="card-small">
                 {% if command.exitcode == 0 %}
                     <span class="blue-text text-darken-2">
@@ -21,5 +62,34 @@
         {% else %}
             <p>No Commands are available.</p>
         {% endif %}
+
+        <ul class="pagination">
+            {% if commands_paginated.has_previous %}
+                <li class="waves-effect"><a href="?page=1" class="blue-text text-darken-2">first</a></li>
+                <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}" class="blue-text text-darken-2">
+                    <i class="material-icons">chevron_left</i></a>
+                </li>
+                <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}" class="blue-text text-darken-2">
+                    {{ commands_paginated.previous_page_number }}</a>
+                </li>
+            {% else %}
+                <li class="disabled"><a href="#!" class="blue-text text-darken-2">
+                    <i class="material-icons">chevron_left</i></a>
+                </li>
+            {% endif %}
+            <li class="active"><a href="#!" class="white-text">{{ commands_paginated.number }}</a></li>
+            {% if commands_paginated.has_next %}
+                <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}" class="blue-text text-darken-2">
+                    {{ commands_paginated.next_page_number }}</a>
+                </li>
+                <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}" class="blue-text text-darken-2">
+                    <i class="material-icons">chevron_right</i></a>
+                </li>
+                <li class="waves-effect"><a href="?page={{ commands_paginated.paginator.num_pages }}" class="blue-text text-darken-2">
+                    last ({{ commands_paginated.paginator.num_pages }})</a>
+                </li>
+            {% endif %}
+        </ul>
+
     </body>
 </html>
