@@ -11,6 +11,7 @@ import (
 	"log/syslog"
 	"os"
 	"os/user"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,19 +23,22 @@ import (
 )
 
 const (
-	address = "localhost:50051"
 	timeout = 300 * time.Millisecond
 )
 
 // Config
 type Config struct {
-	Disabled bool `json:"disabled"`
-	Secure   bool `json:"secure"`
+	RemoteHost string `json:"remote_host"`
+	RemotePort int    `json:"remote_port"`
+	Disabled   bool   `json:"disabled"`
+	Secure     bool   `json:"secure"`
 }
 
 func initConfig() Config {
 	config := Config{}
 	config.Disabled = false
+	config.RemoteHost = "localhost"
+	config.RemotePort = 50051
 
 	user, err := user.Current()
 	if err != nil {
@@ -109,6 +113,7 @@ func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command
 
 func main() {
 	config := initConfig()
+	address := config.RemoteHost + ":" + strconv.Itoa(config.RemotePort)
 
 	if config.Disabled {
 		return
