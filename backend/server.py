@@ -34,16 +34,19 @@ class Historian(history_pb2_grpc.HistorianServicer):
 
 
 def serve(port):
-    with open('certs/localhost.key') as f:
-        private_key = f.read()
-    with open('certs/localhost.crt') as f:
-        certificate_chain = f.read()
-
-    server_credentials = grpc.ssl_server_credentials(
-      ((str.encode(private_key), str.encode(certificate_chain),),))
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    try:
+        with open('certs/localhost.key') as f:
+            private_key = f.read()
+        with open('certs/localhost.crt') as f:
+            certificate_chain = f.read()
+        server_credentials = grpc.ssl_server_credentials(
+        server.add_secure_port('[::]:{}'.format(port), server_credentials)
+        ((str.encode(private_key), str.encode(certificate_chain),),))
+    except:
+        server.add_insecure_port('[::]:{}'.format(port))
+
     history_pb2_grpc.add_HistorianServicer_to_server(Historian(), server)
-    server.add_secure_port('[::]:{}'.format(port), server_credentials)
 
     server.start()
     try:
