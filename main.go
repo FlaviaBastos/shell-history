@@ -40,13 +40,13 @@ func initConfig() Config {
 	config.RemoteHost = "localhost"
 	config.RemotePort = 50051
 
-	user, err := user.Current()
+	currentUser, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Open shell-history.json
-	jsonFile, err := os.Open(user.HomeDir + "/.config/shell-history.json")
+	jsonFile, err := os.Open(currentUser.HomeDir + "/.config/shell-history.json")
 
 	// if we os.Open returns an error log it.
 	if err != nil {
@@ -94,13 +94,13 @@ func connectInsecure(address string) (*grpc.ClientConn, error) {
 
 func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command {
 	var h spb.Command
-	user, err := user.Current()
+	currentUser, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
 	h.Hostname, _ = os.Hostname()
 	h.Timestamp = time.Now().UTC().Unix()
-	h.Username = user.Username
+	h.Username = currentUser.Username
 	h.Cwd, err = os.Getwd()
 	h.Oldpwd = os.Getenv("OLDPWD")
 	h.Command = argsWithoutProg
