@@ -56,10 +56,10 @@ func initConfig() Config {
 		}
 		log.Fatal(err)
 	} else {
-		//Read file.
+		// Read file.
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 
-		//Convert json to Config struct.
+		// Convert json to Config struct.
 		json.Unmarshal(byteValue, &config)
 	}
 
