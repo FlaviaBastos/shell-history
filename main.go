@@ -104,7 +104,7 @@ func connect(address string) (*grpc.ClientConn, error) {
 }
 
 func connectInsecure(address string) (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithTimeout(timeout))
 	if err != nil {
 		return nil, err
 	}
