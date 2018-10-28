@@ -10,12 +10,13 @@ import (
 
 // Used for mocking out the Redactor dependency.
 type mockRedactor struct {
-	source []string
+	input  []string
+	output []string
 }
 
 func (redactor *mockRedactor) transform(source []string) (output []string) {
-	redactor.source = source
-	return source
+	redactor.input = source
+	return redactor.output
 }
 
 func Test_getinformation(t *testing.T) {
@@ -46,8 +47,11 @@ func Test_getinformation(t *testing.T) {
 		}},
 	}
 	for _, tt := range tests {
+		redactor := &mockRedactor{output: tt.args.argsWithoutProg}
+
 		t.Run(tt.name, func(t *testing.T) {
-			got := getinformation(tt.args.argsWithoutProg, tt.args.commandExitCode)
+			got := getinformation(
+				redactor, tt.args.argsWithoutProg, tt.args.commandExitCode)
 			if len(got.Command) != len(tt.args.argsWithoutProg) {
 				t.Errorf("getinformation() = %v, want %v", got, tt.want)
 			}
@@ -56,13 +60,30 @@ func Test_getinformation(t *testing.T) {
 }
 
 func TestCommandRedactions(t *testing.T) {
+	t.Run("information retrieval triggers redactor logic", func(t *testing.T) {
+		redactor := &mockRedactor{output: []string{"mocked", "output"}}
+		commandArguments := []string{"some", "command"}
+
+		command := getinformation(redactor, commandArguments, 0)
+
+		if !reflect.DeepEqual(redactor.input, commandArguments) {
+			t.Errorf("Expected redactor to be passed %q, but was passed %q",
+				commandArguments, redactor.input)
+		}
+
+		if !reflect.DeepEqual(command.Command, redactor.output) {
+			t.Errorf("Expected getinformation.Command to return %q, not %q",
+				redactor.output, command.Command)
+		}
+	})
+
 	t.Run("leave alone commands that don't match redactor", func(t *testing.T) {
 		testCases := []struct {
 			match, transform string
 			source, expected []string
 		}{
-			{"cyclops", "scott", []string{"ls", "/scott"}, []string{"ls", "/scott"}},
-			{"storm", "ororo", []string{"command", "ororo"}, []string{"command", "ororo"}},
+			{"cyclops", "scott", []string{"ls", "scott"}, []string{"ls", "scott"}},
+			{"storm", "ororo", []string{"cmd", "ororo"}, []string{"cmd", "ororo"}},
 		}
 		for _, testCase := range testCases {
 			var redactor Transformer = Redactor{

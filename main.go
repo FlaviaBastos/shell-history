@@ -70,7 +70,7 @@ func initConfig() Config {
 
 // Transforms a source string into a new (and possibly different) output string.
 type Transformer interface {
-	transform(input []string) (output []string)
+	transform(source []string) (result []string)
 }
 
 // Represents a filter that maps a regex key to a regex transform.
@@ -119,22 +119,26 @@ func connectInsecure(address string) (*grpc.ClientConn, error) {
 
 }
 
-func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command {
+func getinformation(
+	redactor Transformer, argsWithoutProg []string, commandExitCode int64,
+) spb.Command {
 	var h spb.Command
 	currentUser, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	h.Hostname, _ = os.Hostname()
 	h.Timestamp = time.Now().UTC().Unix()
 	h.Username = currentUser.Username
 	h.Cwd, err = os.Getwd()
 	h.Oldpwd = os.Getenv("OLDPWD")
-	h.Command = argsWithoutProg
+	h.Command = redactor.transform(argsWithoutProg)
 	h.Exitcode = commandExitCode
 	if os.Geteuid() == 0 {
 		h.Altusername = os.Getenv("SUDO_USER")
 	}
+
 	return h
 }
 
@@ -172,7 +176,7 @@ func main() {
 	defer cancel()
 
 	// TODO: Bootstrap proper Redactor
-	h := getinformation(argsWithoutProg, *commandExitCode)
+	h := getinformation(new(Redactor), argsWithoutProg, *commandExitCode)
 
 	r, err := c.GetCommand(ctx, &h)
 	if err != nil {
