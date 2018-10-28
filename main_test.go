@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
@@ -8,7 +9,6 @@ import (
 	spb "github.com/ebastos/shell-history/history"
 )
 
-// Used for mocking out the Redactor dependency.
 type mockRedactor struct {
 	input  []string
 	output []string
@@ -48,7 +48,6 @@ func Test_getinformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		redactor := &mockRedactor{output: tt.args.argsWithoutProg}
-
 		t.Run(tt.name, func(t *testing.T) {
 			got := getinformation(
 				redactor, tt.args.argsWithoutProg, tt.args.commandExitCode)
@@ -60,17 +59,24 @@ func Test_getinformation(t *testing.T) {
 }
 
 func TestCommandRedactions(t *testing.T) {
+	t.Run("parses configuration file definitions", func(t *testing.T) {
+		redactor := Redactor{"thing": "value"}
+		configFile := bytes.NewBufferString(`{"redactors":{"thing": "value"}}`)
+		config := initConfig(configFile)
+		if !reflect.DeepEqual(config.Redactors, redactor) {
+			t.Errorf("Expected config.Redactors to equal %q, not %q",
+				redactor, config.Redactors)
+		}
+	})
+
 	t.Run("information retrieval triggers redactor logic", func(t *testing.T) {
 		redactor := &mockRedactor{output: []string{"mocked", "output"}}
 		commandArguments := []string{"some", "command"}
-
 		command := getinformation(redactor, commandArguments, 0)
-
 		if !reflect.DeepEqual(redactor.input, commandArguments) {
 			t.Errorf("Expected redactor to be passed %q, but was passed %q",
 				commandArguments, redactor.input)
 		}
-
 		if !reflect.DeepEqual(command.Command, redactor.output) {
 			t.Errorf("Expected getinformation.Command to return %q, not %q",
 				redactor.output, command.Command)
