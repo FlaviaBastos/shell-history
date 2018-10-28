@@ -196,11 +196,11 @@ func main() {
 
 	r, err := c.GetCommand(ctx, &h)
 	if err != nil {
-		log.Fatalf("could not save command: %v", err)
+		log.Fatalf("Received error while uploading command: %v", err)
 	}
 
 	if r.Status == spb.Status_ERR {
-		log.Fatalf("Received error while uploading command")
+		log.Fatalf("could not save command")
 	}
 	return
 }
