@@ -2,7 +2,7 @@ FROM phusion/baseimage
 
 CMD ["/sbin/my_init"]
 
-RUN mkdir -p /app/{certs,backend}
+RUN mkdir -p /app/certs 
 WORKDIR /app
 
 RUN apt-get update
