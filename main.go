@@ -87,7 +87,7 @@ func (redactor Redactor) transform(source []string) (result []string) {
 	return
 }
 
-func connect(address string) (*grpc.ClientConn, error) {
+func connectSecure(address string) (*grpc.ClientConn, error) {
 	// Let's embed the certificate
 	box := packr.NewBox("./certs")
 	cert := box.Bytes("localhost.crt")
@@ -157,9 +157,14 @@ func retrieveJsonFile() (jsonFile io.Reader) {
 func main() {
 	config := initConfig(retrieveJsonFile())
 	address := config.RemoteHost + ":" + strconv.Itoa(config.RemotePort)
+	myConnection := connectInsecure
 
 	if config.Disabled {
 		return
+	}
+
+	if config.Secure {
+		myConnection = connectSecure
 	}
 
 	commandExitCode := flag.Int64("e", 0, "Exit code of last command")
@@ -177,7 +182,7 @@ func main() {
 
 	argsWithoutProg := os.Args[3:]
 
-	conn, err := connectInsecure(address)
+	conn, err := myConnection(address)
 	defer conn.Close()
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
