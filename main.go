@@ -67,6 +67,20 @@ func initConfig() Config {
 	return config
 }
 
+// Transforms a source string into a new (and possibly different) output string.
+type Transformer interface {
+	transform(input string) (output string)
+}
+
+// Represents a filter that maps a regex key to a regex transformation.
+type RedactionFilter map[string]string
+
+// Transforms source string to and output string when it matches a defined
+// redaction.
+func (filter *RedactionFilter) transform(source string) (result string) {
+	return source
+}
+
 func connect(address string) (*grpc.ClientConn, error) {
 	// Let's embed the certificate
 	box := packr.NewBox("./certs")

@@ -42,3 +42,23 @@ func Test_getinformation(t *testing.T) {
 		})
 	}
 }
+
+func TestRedactionFilter(t *testing.T) {
+	t.Run("leave alone commands that do not match redaction filter", func(t *testing.T) {
+		testCases := []struct{ matcher, transformation, source, expected string }{
+			{"bob", "sam", "ls /sam", "ls /sam"},
+			{"sam", "bob", "command bob", "command bob"},
+		}
+		for _, testCase := range testCases {
+			var redactionFilter Transformer = &RedactionFilter{
+				testCase.matcher: testCase.transformation,
+			}
+			t.Run(testCase.source, func(t *testing.T) {
+				actual := redactionFilter.transform(testCase.source)
+				if actual != testCase.expected {
+					t.Errorf("Expected %q, got %q", testCase.expected, actual)
+				}
+			})
+		}
+	})
+}
