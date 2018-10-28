@@ -1,10 +1,22 @@
 package main
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	spb "github.com/ebastos/shell-history/history"
 )
+
+// Used for mocking out the Redactor dependency.
+type mockRedactor struct {
+	source []string
+}
+
+func (redactor *mockRedactor) transform(source []string) (output []string) {
+	redactor.source = source
+	return source
+}
 
 func Test_getinformation(t *testing.T) {
 	type args struct {
@@ -43,19 +55,22 @@ func Test_getinformation(t *testing.T) {
 	}
 }
 
-func TestRedactor(t *testing.T) {
+func TestCommandRedactions(t *testing.T) {
 	t.Run("leave alone commands that don't match redactor", func(t *testing.T) {
-		testCases := []struct{ match, transform, source, expected string }{
-			{"cyclops", "scott", "ls /scott", "ls /scott"},
-			{"storm", "ororo", "command ororo", "command ororo"},
+		testCases := []struct {
+			match, transform string
+			source, expected []string
+		}{
+			{"cyclops", "scott", []string{"ls", "/scott"}, []string{"ls", "/scott"}},
+			{"storm", "ororo", []string{"command", "ororo"}, []string{"command", "ororo"}},
 		}
 		for _, testCase := range testCases {
 			var redactor Transformer = Redactor{
 				testCase.match: testCase.transform,
 			}
-			t.Run(testCase.source, func(t *testing.T) {
+			t.Run(fmt.Sprint(testCase.source), func(t *testing.T) {
 				actual := redactor.transform(testCase.source)
-				if actual != testCase.expected {
+				if !reflect.DeepEqual(actual, testCase.expected) {
 					t.Errorf("Expected %q, got %q", testCase.expected, actual)
 				}
 			})
@@ -63,17 +78,20 @@ func TestRedactor(t *testing.T) {
 	})
 
 	t.Run("modifies commands that match redactor", func(t *testing.T) {
-		testCases := []struct{ match, transform, source, expected string }{
-			{`(--pass)=\w+`, "$1=REDACTED", "--pass=peter", "--pass=REDACTED"},
-			{"peter parker", "spider-man", "do peter parker", "do spider-man"},
+		testCases := []struct {
+			match, transform string
+			source, expected []string
+		}{
+			{`(--pass)=\w+`, "$1=REDACTED", []string{"--pass=peter"}, []string{"--pass=REDACTED"}},
+			{"peter parker", "spider-man", []string{"do", "peter parker"}, []string{"do", "spider-man"}},
 		}
 		for _, testCase := range testCases {
 			var redactor Transformer = Redactor{
 				testCase.match: testCase.transform,
 			}
-			t.Run(testCase.source, func(t *testing.T) {
+			t.Run(fmt.Sprint(testCase.source), func(t *testing.T) {
 				actual := redactor.transform(testCase.source)
-				if actual != testCase.expected {
+				if !reflect.DeepEqual(actual, testCase.expected) {
 					t.Errorf("Expected %q, got %q", testCase.expected, actual)
 				}
 			})
@@ -85,9 +103,9 @@ func TestRedactor(t *testing.T) {
 			`(--pass)=\w+`: "$1=REDACTED",
 			`(--key)=\w+`:  "$1=NOWAY",
 		}
-		expected := "cmd --pass=REDACTED --key=NOWAY"
-		actual := redactor.transform("cmd --pass=clark --key=kent")
-		if actual != expected {
+		expected := []string{"cmd", "--pass=REDACTED", "--key=NOWAY"}
+		actual := redactor.transform([]string{"cmd", "--pass=clark", "--key=kent"})
+		if !reflect.DeepEqual(actual, expected) {
 			t.Errorf("Expected %q, got %q", expected, actual)
 		}
 	})

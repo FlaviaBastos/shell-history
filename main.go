@@ -70,7 +70,7 @@ func initConfig() Config {
 
 // Transforms a source string into a new (and possibly different) output string.
 type Transformer interface {
-	transform(input string) (output string)
+	transform(input []string) (output []string)
 }
 
 // Represents a filter that maps a regex key to a regex transform.
@@ -78,15 +78,17 @@ type Redactor map[string]string
 
 // Transforms source string to and output string when it matches a defined
 // redaction.
-func (redactor Redactor) transform(source string) (result string) {
-	result = source
-
-	for key, value := range redactor {
-		regex, err := regexp.Compile(key)
-		if err != nil {
-			log.Fatalf("Redactor key %q is an invalid regexp", key)
+func (redactor Redactor) transform(source []string) (result []string) {
+	result = make([]string, len(source))
+	for i, part := range source {
+		for key, value := range redactor {
+			regex, err := regexp.Compile(key)
+			if err != nil {
+				log.Fatalf("Redactor key %q is an invalid regexp", key)
+			}
+			part = regex.ReplaceAllString(part, value)
+			result[i] = part
 		}
-		result = regex.ReplaceAllString(result, value)
 	}
 
 	return
@@ -169,6 +171,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
+	// TODO: Bootstrap proper Redactor
 	h := getinformation(argsWithoutProg, *commandExitCode)
 
 	r, err := c.GetCommand(ctx, &h)
