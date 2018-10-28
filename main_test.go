@@ -44,14 +44,14 @@ func Test_getinformation(t *testing.T) {
 }
 
 func TestRedactor(t *testing.T) {
-	t.Run("leave alone commands that do not match redaction filter", func(t *testing.T) {
-		testCases := []struct{ matcher, transformation, source, expected string }{
-			{"bob", "sam", "ls /sam", "ls /sam"},
-			{"sam", "bob", "command bob", "command bob"},
+	t.Run("leave alone commands that don't match redactor", func(t *testing.T) {
+		testCases := []struct{ match, transform, source, expected string }{
+			{"cyclops", "scott", "ls /scott", "ls /scott"},
+			{"storm", "ororo", "command ororo", "command ororo"},
 		}
 		for _, testCase := range testCases {
 			var redactor Transformer = Redactor{
-				testCase.matcher: testCase.transformation,
+				testCase.match: testCase.transform,
 			}
 			t.Run(testCase.source, func(t *testing.T) {
 				actual := redactor.transform(testCase.source)
@@ -62,14 +62,14 @@ func TestRedactor(t *testing.T) {
 		}
 	})
 
-	t.Run("modifies commands that match redaction filter", func(t *testing.T) {
-		testCases := []struct{ matcher, transformation, source, expected string }{
-			{`(--pass)=\w+`, "$1=REDACTED", "--pass=bob", "--pass=REDACTED"},
-			{"sam", "bob", "do sam", "do bob"},
+	t.Run("modifies commands that match redactor", func(t *testing.T) {
+		testCases := []struct{ match, transform, source, expected string }{
+			{`(--pass)=\w+`, "$1=REDACTED", "--pass=peter", "--pass=REDACTED"},
+			{"peter parker", "spider-man", "do peter parker", "do spider-man"},
 		}
 		for _, testCase := range testCases {
 			var redactor Transformer = Redactor{
-				testCase.matcher: testCase.transformation,
+				testCase.match: testCase.transform,
 			}
 			t.Run(testCase.source, func(t *testing.T) {
 				actual := redactor.transform(testCase.source)
@@ -77,6 +77,18 @@ func TestRedactor(t *testing.T) {
 					t.Errorf("Expected %q, got %q", testCase.expected, actual)
 				}
 			})
+		}
+	})
+
+	t.Run("modifies commands that match multiple redactors", func(t *testing.T) {
+		var redactor Transformer = Redactor{
+			`(--pass)=\w+`: "$1=REDACTED",
+			`(--key)=\w+`:  "$1=NOWAY",
+		}
+		expected := "cmd --pass=REDACTED --key=NOWAY"
+		actual := redactor.transform("cmd --pass=clark --key=kent")
+		if actual != expected {
+			t.Errorf("Expected %q, got %q", expected, actual)
 		}
 	})
 }

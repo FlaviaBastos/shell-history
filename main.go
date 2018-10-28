@@ -73,7 +73,7 @@ type Transformer interface {
 	transform(input string) (output string)
 }
 
-// Represents a filter that maps a regex key to a regex transformation.
+// Represents a filter that maps a regex key to a regex transform.
 type Redactor map[string]string
 
 // Transforms source string to and output string when it matches a defined
@@ -86,7 +86,7 @@ func (redactor Redactor) transform(source string) (result string) {
 		if err != nil {
 			log.Fatalf("Redactor key %q is an invalid regexp", key)
 		}
-		result = regex.ReplaceAllString(source, value)
+		result = regex.ReplaceAllString(result, value)
 	}
 
 	return
