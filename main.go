@@ -11,6 +11,7 @@ import (
 	"log/syslog"
 	"os"
 	"os/user"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -73,12 +74,22 @@ type Transformer interface {
 }
 
 // Represents a filter that maps a regex key to a regex transformation.
-type RedactionFilter map[string]string
+type Redactor map[string]string
 
 // Transforms source string to and output string when it matches a defined
 // redaction.
-func (filter *RedactionFilter) transform(source string) (result string) {
-	return source
+func (redactor Redactor) transform(source string) (result string) {
+	result = source
+
+	for key, value := range redactor {
+		regex, err := regexp.Compile(key)
+		if err != nil {
+			log.Fatalf("Redactor key %q is an invalid regexp", key)
+		}
+		result = regex.ReplaceAllString(source, value)
+	}
+
+	return
 }
 
 func connect(address string) (*grpc.ClientConn, error) {

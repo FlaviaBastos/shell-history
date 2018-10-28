@@ -43,18 +43,36 @@ func Test_getinformation(t *testing.T) {
 	}
 }
 
-func TestRedactionFilter(t *testing.T) {
+func TestRedactor(t *testing.T) {
 	t.Run("leave alone commands that do not match redaction filter", func(t *testing.T) {
 		testCases := []struct{ matcher, transformation, source, expected string }{
 			{"bob", "sam", "ls /sam", "ls /sam"},
 			{"sam", "bob", "command bob", "command bob"},
 		}
 		for _, testCase := range testCases {
-			var redactionFilter Transformer = &RedactionFilter{
+			var redactor Transformer = Redactor{
 				testCase.matcher: testCase.transformation,
 			}
 			t.Run(testCase.source, func(t *testing.T) {
-				actual := redactionFilter.transform(testCase.source)
+				actual := redactor.transform(testCase.source)
+				if actual != testCase.expected {
+					t.Errorf("Expected %q, got %q", testCase.expected, actual)
+				}
+			})
+		}
+	})
+
+	t.Run("modifies commands that match redaction filter", func(t *testing.T) {
+		testCases := []struct{ matcher, transformation, source, expected string }{
+			{`(--pass)=\w+`, "$1=REDACTED", "--pass=bob", "--pass=REDACTED"},
+			{"sam", "bob", "do sam", "do bob"},
+		}
+		for _, testCase := range testCases {
+			var redactor Transformer = Redactor{
+				testCase.matcher: testCase.transformation,
+			}
+			t.Run(testCase.source, func(t *testing.T) {
+				actual := redactor.transform(testCase.source)
 				if actual != testCase.expected {
 					t.Errorf("Expected %q, got %q", testCase.expected, actual)
 				}
