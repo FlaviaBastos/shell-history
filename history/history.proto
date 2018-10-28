@@ -2,10 +2,12 @@ syntax = "proto3";
 package history;
 
 
-// The greeting service definition.
+// Historian service definition.
 service Historian {
-  // Sends a greeting
+  // Receives a command history entry
   rpc GetCommand (Command) returns (Response) {}
+  // Sends back a command history entry
+  rpc SendCommand (RequestHistory) returns (Command) {}
 }
 
   enum Status {
@@ -27,4 +29,8 @@ message Command {
 message Response {
   Status status = 1;
 }
+
+message RequestHistory {
+  string criteria = 1;
+};
 
