@@ -69,6 +69,14 @@ func TestCommandRedactions(t *testing.T) {
 		}
 	})
 
+	t.Run("there are no redactors configured", func(t *testing.T) {
+		configFile := bytes.NewBufferString(`{}`)
+		config := initConfig(configFile)
+		if len(config.Redactors) != 0 {
+			t.Errorf("Expected config.Redactors to be empty")
+		}
+	})
+
 	t.Run("information retrieval triggers redactor logic", func(t *testing.T) {
 		redactor := &mockRedactor{output: []string{"mocked", "output"}}
 		commandArguments := []string{"some", "command"}
