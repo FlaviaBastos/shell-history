@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"log/syslog"
 	"os"
 	"os/user"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -28,43 +31,56 @@ const (
 
 // Config
 type Config struct {
-	RemoteHost string `json:"remote_host"`
-	RemotePort int    `json:"remote_port"`
-	Disabled   bool   `json:"disabled"`
-	Secure     bool   `json:"secure"`
+	RemoteHost string   `json:"remote_host"`
+	RemotePort int      `json:"remote_port"`
+	Disabled   bool     `json:"disabled"`
+	Secure     bool     `json:"secure"`
+	Redactors  Redactor `json:"redactors"`
 }
 
-func initConfig() Config {
+func initConfig(jsonFile io.Reader) Config {
 	config := Config{}
 	config.Disabled = false
 	config.RemoteHost = "localhost"
 	config.RemotePort = 50051
 
-	user, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
+	// Read file.
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// Convert json to Config struct.
+	json.Unmarshal(byteValue, &config)
+	if jsonFile, ok := jsonFile.(io.ReadCloser); ok {
+		jsonFile.Close()
 	}
 
-	// Open shell-history.json
-	jsonFile, err := os.Open(user.HomeDir + "/.config/shell-history.json")
-
-	// if we os.Open returns an error log it.
-	if err != nil {
-		if strings.ContainsAny("no such file or directory", err.Error()) {
-			fmt.Println(err)
-			return config
-		}
-		log.Fatal(err)
-	} else {
-		//Read file.
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-
-		//Convert json to Config struct.
-		json.Unmarshal(byteValue, &config)
-	}
-
-	jsonFile.Close()
 	return config
+}
+
+// Transforms a source string into a new (and possibly different) output string.
+type Transformer interface {
+	transform(source []string) (result []string)
+}
+
+// Represents a filter that maps a regex key to a regex transform.
+type Redactor map[string]string
+
+// Transforms source string to and output string when it matches a defined
+// redaction.
+func (redactor Redactor) transform(source []string) (result []string) {
+	result = make([]string, len(source))
+
+	for i, part := range source {
+		for key, value := range redactor {
+			regex, err := regexp.Compile(key)
+			if err != nil {
+				log.Fatalf("Redactor key %q is an invalid regexp", key)
+			}
+			part = regex.ReplaceAllString(part, value)
+			result[i] = part
+		}
+	}
+
+	return
 }
 
 func connect(address string) (*grpc.ClientConn, error) {
@@ -92,27 +108,52 @@ func connectInsecure(address string) (*grpc.ClientConn, error) {
 
 }
 
-func getinformation(argsWithoutProg []string, commandExitCode int64) spb.Command {
+func getinformation(
+	redactor Transformer, argsWithoutProg []string, commandExitCode int64,
+) spb.Command {
 	var h spb.Command
-	user, err := user.Current()
+	currentUser, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	h.Hostname, _ = os.Hostname()
 	h.Timestamp = time.Now().UTC().Unix()
-	h.Username = user.Username
+	h.Username = currentUser.Username
 	h.Cwd, err = os.Getwd()
 	h.Oldpwd = os.Getenv("OLDPWD")
-	h.Command = argsWithoutProg
+	h.Command = redactor.transform(argsWithoutProg)
 	h.Exitcode = commandExitCode
 	if os.Geteuid() == 0 {
 		h.Altusername = os.Getenv("SUDO_USER")
 	}
+
 	return h
 }
 
+func retrieveJsonFile() (jsonFile io.Reader) {
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Open shell-history.json
+	jsonFile, err = os.Open(currentUser.HomeDir + "/.config/shell-history.json")
+
+	// if os.Open returns an error log it.
+	if err != nil {
+		if strings.ContainsAny("no such file or directory", err.Error()) {
+			fmt.Println(err)
+			return bytes.NewReader([]byte{})
+		}
+		log.Fatal(err)
+	}
+
+	return
+}
+
 func main() {
-	config := initConfig()
+	config := initConfig(retrieveJsonFile())
 	address := config.RemoteHost + ":" + strconv.Itoa(config.RemotePort)
 
 	if config.Disabled {
@@ -144,7 +185,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	h := getinformation(argsWithoutProg, *commandExitCode)
+	h := getinformation(config.Redactors, argsWithoutProg, *commandExitCode)
 
 	r, err := c.GetCommand(ctx, &h)
 	if err != nil {
