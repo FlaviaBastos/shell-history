@@ -69,6 +69,10 @@ type Redactor map[string]string
 func (redactor Redactor) transform(source []string) (result []string) {
 	result = make([]string, len(source))
 
+	if len(redactor) == 0 {
+		result = source
+		return
+	}
 	for i, part := range source {
 		for key, value := range redactor {
 			regex, err := regexp.Compile(key)
@@ -105,7 +109,6 @@ func connectInsecure(address string) (*grpc.ClientConn, error) {
 		return nil, err
 	}
 	return conn, nil
-
 }
 
 func getinformation(
@@ -127,7 +130,6 @@ func getinformation(
 	if os.Geteuid() == 0 {
 		h.Altusername = os.Getenv("SUDO_USER")
 	}
-
 	return h
 }
 
