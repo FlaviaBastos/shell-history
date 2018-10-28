@@ -19,7 +19,7 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 class Historian(history_pb2_grpc.HistorianServicer):
 
-    def GetCommand(self, request, context):
+    def GetCommand(self, request):
 
         #timestamp = datetime.utcfromtimestamp(request.timestamp)
         timestamp = datetime.fromtimestamp(request.timestamp, pytz.utc)
