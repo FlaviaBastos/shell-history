@@ -1,3 +1,5 @@
+import logging
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.template import loader
@@ -5,8 +7,16 @@ from django.http import HttpResponse
 from .models import Command
 
 
+logger = logging.getLogger(__name__)
+
 def index(request):
-    latest_commands = Command.objects.order_by('-timestamp')
+
+    search_query = request.GET.get('command', None)
+    if search_query:
+        latest_commands = Command.objects.filter(command__contains=search_query).order_by('-timestamp')
+    else:
+        latest_commands = Command.objects.order_by('-timestamp')
+    
     paginator = Paginator(latest_commands, 150)
 
     page = request.GET.get('page')
