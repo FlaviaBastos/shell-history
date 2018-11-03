@@ -25,4 +25,6 @@ def index(request):
     context = {
         'commands_paginated': commands_paginated,
     }
+    if search_query:
+        context['search_query'] = search_query
     return HttpResponse(template.render(context, request))

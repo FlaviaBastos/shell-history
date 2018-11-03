@@ -31,14 +31,14 @@
           </nav>
 
         {% if commands_paginated %}
-
+        
             <ul class="pagination">
                 {% if commands_paginated.has_previous %}
-                    <li class="waves-effect"><a href="?page=1" class="blue-text text-darken-2">first</a></li>
-                    <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}" class="blue-text text-darken-2">
+                    <li class="waves-effect"><a href="?page=1{% if search_query %}&command={{ search_query }}{% endif %}" class="blue-text text-darken-2">first</a></li>
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}{% if search_query %}&command={{ search_query }}{% endif %}" class="blue-text text-darken-2">
                         <i class="material-icons">chevron_left</i></a>
                     </li>
-                    <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}" class="blue-text text-darken-2">
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.previous_page_number }}{% if search_query %}&command={{ search_query }}{% endif %}" class="blue-text text-darken-2">
                         {{ commands_paginated.previous_page_number }}</a>
                     </li>
                 {% else %}
@@ -48,13 +48,13 @@
                 {% endif %}
                 <li class="active red darken-2"><a href="#!" class="white-text">{{ commands_paginated.number }}</a></li>
                 {% if commands_paginated.has_next %}
-                    <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}" class="blue-text text-darken-2">
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}{% if search_query %}&command={{ search_query }}{% endif %}" class="blue-text text-darken-2">
                         {{ commands_paginated.next_page_number }}</a>
                     </li>
-                    <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}" class="blue-text text-darken-2">
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.next_page_number }}{% if search_query %}&command={{ search_query }}{% endif %}" class="blue-text text-darken-2">
                         <i class="material-icons">chevron_right</i></a>
                     </li>
-                    <li class="waves-effect"><a href="?page={{ commands_paginated.paginator.num_pages }}" class="blue-text text-darken-2">
+                    <li class="waves-effect"><a href="?page={{ commands_paginated.paginator.num_pages }}{% if search_query %}&command={{ search_query }}{% endif %}" class="blue-text text-darken-2">
                         last ({{ commands_paginated.paginator.num_pages }})</a>
                     </li>
                 {% endif %}
