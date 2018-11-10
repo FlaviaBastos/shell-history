@@ -9,6 +9,22 @@ The shell history is an essential resource for a system administrator as it not 
 
 Unfortunately the standard way the shell history works is that it attaches the commands list to a terminal, session and/or individual host. It would be much more valuable to have access to one’s shell history from any terminal you are currently working from.
 
+
+# Quick Start
+
+## Backend:
+
+Create a database called `shell-history` and set username and password
+
+```
+docker build . --tag shell-history
+docker run -p 8000:80 -p 50051:50051 --env SH_MYSQL_DB=shell_history --env SH_MYSQL_HOST=mysql_host --env SH_MYSQL_USER=mysql_username --env SH_MYSQL_PASS=mysql_password shell-history
+
+```
+
+## Shell:
+*TODO*
+
 # GOALS
 
 1. Implement a shell history which is accessible from any host within a given set of restrictions

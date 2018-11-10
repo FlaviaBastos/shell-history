@@ -5,8 +5,8 @@ CMD ["/sbin/my_init"]
 RUN mkdir -p /app/certs 
 WORKDIR /app
 
-RUN apt-get update
-RUN apt-get install -y python3-dev gcc python3-pip
+RUN apt  update
+RUN apt install -y python3-dev gcc python3-pip libmysqlclient-dev
 
 COPY requirements.txt requirements.txt
 COPY history/history.proto history/history.proto
