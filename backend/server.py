@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class Historian(history_pb2_grpc.HistorianServicer):
 
-    def GetCommand(self, request):
+    def GetCommand(self, request, _context):
 
         timestamp = datetime.fromtimestamp(request.timestamp, pytz.utc)
         command = ' '.join(request.command)
